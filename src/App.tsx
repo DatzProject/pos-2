@@ -14,25 +14,23 @@ const COLORS = {
 
 const ACCESS_CODE = "6237834364772641243310";
 
-const QUESTIONS = [
-  {
-    id: 0,
-    soal: "84 ÷ 7 = ...",
-    answer: 12,
-    type: "number",
-  },
-  {
-    id: 1,
-    soal: "156 ÷ 6 = ...",
-    answer: 26,
-    type: "number",
-  },
-  {
-    id: 2,
-    soal: "864 ÷ 8 = ...",
-    answer: 108,
-    type: "number",
-  },
+interface Question {
+  id: number;
+  soal: string;
+  answer: number;
+  type: string;
+  satuan?: string;
+}
+
+interface CheckedQuestion extends Question {
+  userAnswer: number;
+  correct: boolean;
+}
+
+const QUESTIONS: Question[] = [
+  { id: 0, soal: "84 ÷ 7 = ...", answer: 12, type: "number" },
+  { id: 1, soal: "156 ÷ 6 = ...", answer: 26, type: "number" },
+  { id: 2, soal: "864 ÷ 8 = ...", answer: 108, type: "number" },
   {
     id: 3,
     soal: "Sebuah persegi memiliki panjang sisi 8 cm. Berapakah keliling persegi tersebut?",
@@ -105,8 +103,7 @@ const GRADES = [
   "Sempurna! 🎉",
 ];
 
-// ── Halaman kode akses ──────────────────────────────────────────────
-function AccessPage({ onUnlock }) {
+function AccessPage({ onUnlock }: { onUnlock: () => void }) {
   const [input, setInput] = useState("");
   const [shake, setShake] = useState(false);
   const [wrong, setWrong] = useState(false);
@@ -121,7 +118,7 @@ function AccessPage({ onUnlock }) {
     }
   };
 
-  const handleKey = (e) => {
+  const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSubmit();
   };
 
@@ -263,11 +260,10 @@ function AccessPage({ onUnlock }) {
   );
 }
 
-// ── Halaman kuis ───────────────────────────────────────────────────
 export default function MathQuiz2() {
   const [unlocked, setUnlocked] = useState(false);
-  const [inputs, setInputs] = useState(Array(10).fill(""));
-  const [result, setResult] = useState(null);
+  const [inputs, setInputs] = useState<string[]>(Array(10).fill(""));
+  const [result, setResult] = useState<CheckedQuestion[] | null>(null);
 
   if (!unlocked) {
     return <AccessPage onUnlock={() => setUnlocked(true)} />;
@@ -275,7 +271,7 @@ export default function MathQuiz2() {
 
   const allFilled = inputs.every((v) => v.trim() !== "");
 
-  const handleChange = (i, val) => {
+  const handleChange = (i: number, val: string) => {
     if (result) return;
     setInputs((prev) => {
       const next = [...prev];
@@ -286,7 +282,7 @@ export default function MathQuiz2() {
 
   const handleSubmit = () => {
     if (!allFilled || result) return;
-    const checked = QUESTIONS.map((q, i) => {
+    const checked: CheckedQuestion[] = QUESTIONS.map((q, i) => {
       const userAnswer = parseInt(inputs[i].trim(), 10);
       return { ...q, userAnswer, correct: userAnswer === q.answer };
     });
@@ -317,7 +313,6 @@ export default function MathQuiz2() {
         fontFamily: "'Courier New', Courier, monospace",
       }}
     >
-      {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <h1
           style={{
@@ -344,7 +339,6 @@ export default function MathQuiz2() {
         </p>
       </div>
 
-      {/* Score banner */}
       {result && (
         <div
           style={{
@@ -401,7 +395,6 @@ export default function MathQuiz2() {
         </div>
       )}
 
-      {/* Questions */}
       <div
         style={{
           width: "100%",
@@ -434,7 +427,7 @@ export default function MathQuiz2() {
             >
               {section.indices.map((qi) => {
                 const q = QUESTIONS[qi];
-                const res = result ? result[qi] : null;
+                const res: CheckedQuestion | null = result ? result[qi] : null;
                 const borderColor = res
                   ? res.correct
                     ? COLORS.success
@@ -456,7 +449,6 @@ export default function MathQuiz2() {
                       transition: "border-color 0.3s",
                     }}
                   >
-                    {/* Nomor */}
                     <span
                       style={{
                         fontSize: "0.78rem",
@@ -469,7 +461,6 @@ export default function MathQuiz2() {
                       {qi + 1}.
                     </span>
 
-                    {/* Soal + input */}
                     <div style={{ flex: "1 1 200px" }}>
                       <p
                         style={{
@@ -550,7 +541,6 @@ export default function MathQuiz2() {
         ))}
       </div>
 
-      {/* Tombol */}
       <div style={{ marginTop: "1.8rem", width: "100%", maxWidth: "600px" }}>
         {!result ? (
           <button
